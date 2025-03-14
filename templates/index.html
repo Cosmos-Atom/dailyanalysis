@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Rating Chart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>📊 Rating Chart</h1>
+    
+    <label for="rating">Enter Rating (1-10):</label>
+    <input type="number" id="rating" min="1" max="10">
+    <button onclick="submitRating()">Submit</button>
+
+    <br><br>
+
+    <label for="chartType">Select Chart Type:</label>
+    <select id="chartType" onchange="updateChart()">
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+    </select>
+
+    <canvas id="ratingChart"></canvas>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

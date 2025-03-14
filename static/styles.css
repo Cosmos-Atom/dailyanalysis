@@ -1,0 +1,121 @@
+/* Full-screen background setup */
+body {
+    background-image: url('bg.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex; 
+    justify-content: center;  /* Center horizontally */
+    align-items: center;  /* Center vertically */
+    height: 100vh;  /* Full viewport height */
+}
+
+/* Main content container */
+.container {
+    width: 750px;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(231, 188, 240, 0.1);
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(15px);
+    text-align: center;
+}
+
+/* Title styling */
+h1 {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: bold;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Input fields and buttons */
+input, button, select {
+    padding: 12px;
+    margin: 10px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+}
+
+input {
+    width: 80px;
+    text-align: center;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Button Styling */
+button {
+    background: #00aaff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: #0088cc;
+    transform: scale(1.05);
+}
+
+/* Dropdown styling */
+select {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+select option {
+    background: #333;
+    color: white;
+}
+
+/* Chart container */
+canvas {
+    max-width: 100%; /* Ensures chart scales properly */
+    height: 300px !important; /* Reduce height */
+    width: 100% !important;
+}
+
+/* Legend (if used) */
+.legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.legend div {
+    width: 20px;
+    height: 10px;
+    margin-right: 5px;
+    background: blue;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .container {
+        width: 90%;
+        padding: 15px;
+    }
+
+    input {
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+}
