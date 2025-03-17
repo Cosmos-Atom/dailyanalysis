@@ -1,10 +1,13 @@
 let chart;
 let chartType = "weekly"; // Default chart type
 
-// Function to fetch data from the backend based on selected chart type
+// Function to fetch data from the backend
 async function fetchData() {
     try {
         const response = await fetch(`/data/${chartType}`);
+        if (!response.ok) {
+            throw new Error("Unauthorized or error fetching data");
+        }
         const data = await response.json();
         return data;
     } catch (error) {
@@ -34,32 +37,32 @@ async function updateChart() {
         data: {
             labels: labels,
             datasets: [{
-                label: chartType === "weekly" ? "Weekly Ratings" : "Monthly Ratings",
+                label: `Your ${chartType} Ratings`,
                 data: ratings,
-                borderColor: "#ffffff", // White line for better contrast
-                backgroundColor: "rgba(255, 255, 255, 0.2)", // Light white transparent fill
+                borderColor: "#ffffff",
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
                 borderWidth: 2,
                 fill: true,
-                tension: 0.3, // Smooth curved line
-                pointBackgroundColor: "#ffffff", // White dots for points
+                tension: 0.3,
+                pointBackgroundColor: "#ffffff",
                 pointRadius: 5
             }]
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { display: false } // Hides the legend
+                legend: { display: false }
             },
             scales: {
                 x: {
-                    ticks: { color: "#ffffff" }, // X-axis labels in white
-                    grid: { color: "rgba(255, 255, 255, 0.2)" }  // Subtle X-axis grid lines
+                    ticks: { color: "#ffffff" },
+                    grid: { color: "rgba(255, 255, 255, 0.2)" }
                 },
                 y: {
                     min: 0,
                     max: 10,
-                    ticks: { stepSize: 1, color: "#ffffff" }, // Y-axis labels in white
-                    grid: { color: "rgba(255, 255, 255, 0.2)" }  // Subtle Y-axis grid lines
+                    ticks: { stepSize: 1, color: "#ffffff" },
+                    grid: { color: "rgba(255, 255, 255, 0.2)" }
                 }
             }
         }
@@ -75,12 +78,22 @@ async function submitRating() {
         return;
     }
 
-    await fetch("/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating: rating })
-    });
+    try {
+        const response = await fetch("/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rating: rating })
+        });
 
+        const result = await response.json();
+        if (!response.ok) {
+            alert(result.error || "Error submitting rating");
+            return;
+        }
+    } catch (error) {
+        console.error("Error submitting rating:", error);
+    }
+    
     document.getElementById("rating").value = ""; // Clear input field
     updateChart(); // Refresh the chart with new data
 }

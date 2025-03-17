@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Rating Chart</title>
+    <title>📊 Rating Chart</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -11,22 +11,153 @@
 
 <div class="container">
     <h1>📊 Rating Chart</h1>
+    <p>Logged in as: <strong>{{ username }}</strong></p>
     
-    <label for="rating">Enter Rating (1-10):</label>
-    <input type="number" id="rating" min="1" max="10">
-    <button onclick="submitRating()">Submit</button>
+    {% if view_user != username %}
+    <div class="view-info">
+        <p>Currently viewing: <strong>{{ view_user }}</strong>'s ratings (View Only)</p>
+        <a href="/reset_view" class="btn">Back to My Ratings</a>
+    </div>
+    {% endif %}
+    
+    <div class="user-select">
+        <label for="userSwitch">Switch to view:</label>
+        <select id="userSwitch" onchange="switchUser(this.value)">
+            <option value="{{ username }}" {% if view_user == username %}selected{% endif %}>My Ratings</option>
+            {% for user in other_users %}
+            <option value="{{ user }}" {% if view_user == user %}selected{% endif %}>{{ user }}'s Ratings</option>
+            {% endfor %}
+        </select>
+    </div>
 
-    <br><br>
+    {% if not view_only %}
+    <div class="input-container">
+        <label for="rating">Enter Today's Rating (1-10):</label>
+        <input type="number" id="rating" min="1" max="10" placeholder="Rate...">
+        <button id="submitBtn" onclick="submitRating()">Submit</button>
+        <p id="message" class="message"></p>
+    </div>
+    {% endif %}
 
-    <label for="chartType">Select Chart Type:</label>
-    <select id="chartType" onchange="updateChart()">
-        <option value="weekly">Weekly</option>
-        <option value="monthly">Monthly</option>
-    </select>
+    <div class="select-container">
+        <label for="chartType">Select Chart Type:</label>
+        <select id="chartType" onchange="updateChart()">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+        </select>
+    </div>
 
-    <canvas id="ratingChart"></canvas>
+    <div class="chart-container">
+        <canvas id="ratingChart"></canvas>
+    </div>
+
+    <a href="/logout" class="logout-btn">Logout</a>
 </div>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script>
+    function switchUser(username) {
+        window.location.href = "/switch_user/" + username;
+    }
+    
+    function submitRating() {
+        const ratingInput = document.getElementById('rating');
+        const rating = parseInt(ratingInput.value);
+        const messageElement = document.getElementById('message');
+        
+        if (isNaN(rating) || rating < 1 || rating > 10) {
+            messageElement.textContent = "Please enter a valid rating between 1 and 10";
+            messageElement.className = "message error";
+            return;
+        }
+        
+        fetch('/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ rating: rating }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                messageElement.textContent = data.error;
+                messageElement.className = "message error";
+            } else {
+                messageElement.textContent = data.message;
+                messageElement.className = "message success";
+                ratingInput.value = '';
+                updateChart(); // Refresh chart with new data
+            }
+        })
+        .catch(error => {
+            messageElement.textContent = "An error occurred. Please try again.";
+            messageElement.className = "message error";
+        });
+    }
+    
+    let chartInstance = null;
+    
+    function updateChart() {
+        const chartType = document.getElementById('chartType').value;
+        
+        fetch(`/data/${chartType}`)
+        .then(response => response.json())
+        .then(data => {
+            const labels = data.map(item => item[0]);
+            const values = data.map(item => item[1]);
+            
+            // Destroy previous chart if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            const ctx = document.getElementById('ratingChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: chartType === 'daily' ? 'Daily Rating' : 
+                               chartType === 'weekly' ? 'Weekly Average' : 'Monthly Average',
+                        data: values,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: {
+                                display: true,
+                                text: 'Rating'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: chartType === 'daily' ? 'Date' : 
+                                      chartType === 'weekly' ? 'Week' : 'Month'
+                            }
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching chart data:', error);
+        });
+    }
+    
+    // Initialize chart on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateChart();
+    });
+</script>
 </body>
 </html>
